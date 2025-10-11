@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[4]:
-
-
 from flask import Flask, request, jsonify
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
@@ -13,12 +10,9 @@ import string
 import nltk
 import os
 
-nltk_packages = ['punkt', 'stopwords', 'wordnet']
-for pkg in nltk_packages:
-    try:
-        nltk.data.find(f'tokenizers/{pkg}' if pkg=='punkt' else f'corpora/{pkg}')
-    except LookupError:
-        nltk.download(pkg)
+# Use local nltk_data folder for deployment
+nltk_data_path = os.path.join(os.path.dirname(__file__), "nltk_data")
+nltk.data.path.append(nltk_data_path)
 
 app = Flask(__name__)
 
@@ -60,6 +54,10 @@ def get_tfidf(texts):
         'features': vectorizer.get_feature_names_out().tolist(),
         'vectors': X.toarray().tolist()
     }
+
+@app.route("/")
+def home():
+    return "App is running!"
 
 @app.route('/process', methods=['POST'])
 def process_text():
@@ -103,10 +101,3 @@ def process_text():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
-
-
-# In[ ]:
-
-
-
-

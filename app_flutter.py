@@ -4,7 +4,7 @@
 from flask import Flask, request, jsonify
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-from nltk.stem import WordNetLemmatizer
+from nltk.stem import WordNetLemmatizer, PorterStemmer
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 import string
 import nltk
@@ -31,6 +31,11 @@ def lemmatize_text(text):
     lemmatizer = WordNetLemmatizer()
     tokens = word_tokenize(text)
     return ' '.join([lemmatizer.lemmatize(token) for token in tokens])
+
+def stem_text(text):
+    stemmer = PorterStemmer()
+    tokens = word_tokenize(text)
+    return ' '.join([stemmer.stem(token) for token in tokens])
 
 def tokenize_text(text):
     return word_tokenize(text)
@@ -77,6 +82,8 @@ def process_text():
         result = remove_stopwords(text)
     elif action == 'lemmatize':
         result = lemmatize_text(text)
+    elif action == 'stem':
+        result = stem_text(text)
     elif action == 'tokenize':
         result = tokenize_text(text)
     elif action == 'bow':

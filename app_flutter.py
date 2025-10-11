@@ -95,6 +95,7 @@ def process_text():
         processed = remove_punctuation(processed)
         processed = remove_stopwords(processed)
         processed = lemmatize_text(processed)
+        processed = stem_text(processed)
         tokens = tokenize_text(processed)
         result = {
             "processed_text": processed,

@@ -3,15 +3,17 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer, PorterStemmer
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from nltk import pos_tag, ne_chunk
+from nltk.tree import Tree
 import string
 import nltk
 import os
 
-# Use local NLTK data folder
 nltk_data_path = os.path.join(os.path.dirname(__file__), "nltk_data")
 nltk.data.path.append(nltk_data_path)
 
 app = Flask(__name__)
+
 
 def to_lowercase(text):
     return text.lower()
@@ -41,6 +43,8 @@ def stem_text(text):
 def tokenize_text(text):
     return word_tokenize(text)
 
+
+
 def get_bow(texts):
     if isinstance(texts, str):
         texts = [texts]
@@ -58,6 +62,29 @@ def get_tfidf(texts):
     features = vectorizer.get_feature_names_out().tolist()
     vectors = X.toarray().tolist()
     return {"features": features, "vectors": vectors}
+
+
+
+def pos_tagging(text):
+    tokens = word_tokenize(text)
+    tagged = pos_tag(tokens)
+    return [{"word": word, "pos": pos} for word, pos in tagged]
+
+
+
+def named_entity_recognition(text):
+    tokens = word_tokenize(text)
+    pos_tags = pos_tag(tokens)
+    chunks = ne_chunk(pos_tags)
+    entities = []
+    for chunk in chunks:
+        if isinstance(chunk, Tree):  
+            entity_name = " ".join(c[0] for c in chunk.leaves())
+            entity_type = chunk.label()
+            entities.append({"entity": entity_name, "type": entity_type})
+    return entities
+
+
 
 @app.route("/")
 def home():
@@ -87,12 +114,24 @@ def process_text():
         result = stem_text(text)
     elif action == "tokenize":
         result = tokenize_text(text)
+    elif action == "pos_tagging":
+        result = pos_tagging(text)
+    elif action == "ner":
+        result = named_entity_recognition(text)
     elif action == "bow":
         input_texts = texts if texts else text
         result = get_bow(input_texts)
     elif action == "tfidf":
         input_texts = texts if texts else text
         result = get_tfidf(input_texts)
+    elif action == "vocabulary":
+        input_texts = texts if texts else text
+        if isinstance(input_texts, str):
+            input_texts = [input_texts]
+        vectorizer = CountVectorizer()
+        vectorizer.fit(input_texts)
+        vocab = sorted(vectorizer.get_feature_names_out().tolist())    
+        result = {"vocabulary": vocab}
     elif action == "all":
         processed_text = to_lowercase(text)
         processed_text = remove_punctuation(processed_text)
@@ -102,12 +141,13 @@ def process_text():
         tokens = tokenize_text(processed_text)
         result = {
             "processed_text": processed_text,
-            "tokens": tokens
+            "tokens": tokens,
         }
     else:
         return jsonify({"error": "Invalid action"}), 400
 
     return jsonify({"result": result})
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

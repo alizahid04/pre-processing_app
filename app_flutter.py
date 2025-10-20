@@ -12,7 +12,14 @@ import os
 nltk_data_path = os.path.join(os.path.dirname(__file__), "nltk_data")
 nltk.data.path.append(nltk_data_path)
 
+try:
+    nltk_data_path = os.path.join(os.path.dirname(__file__), "nltk_data")
+except NameError:
+    nltk_data_path = os.path.join(os.getcwd(), "nltk_data")
+nltk.data.path.append(nltk_data_path)
+
 app = Flask(__name__)
+
 
 
 def to_lowercase(text):
@@ -41,8 +48,9 @@ def stem_text(text):
     return ' '.join(stemmed_tokens)
 
 def tokenize_text(text):
-    return word_tokenize(text)
-
+    tokens = word_tokenize(text)
+    output = ','.join(tokens)
+    return output
 
 
 def get_bow(texts):
@@ -63,28 +71,23 @@ def get_tfidf(texts):
     vectors = X.toarray().tolist()
     return {"features": features, "vectors": vectors}
 
-
-
 def pos_tagging(text):
-    tokens = word_tokenize(text)
-    tagged = pos_tag(tokens)
+    filtered_text = remove_stopwords(text)  
+    tokens = word_tokenize(filtered_text)   
     return [{"word": word, "pos": pos} for word, pos in tagged]
-
-
 
 def named_entity_recognition(text):
     tokens = word_tokenize(text)
-    pos_tags = pos_tag(tokens)
-    chunks = ne_chunk(pos_tags)
+    tokens = [word for word in tokens if word.isalpha()]
+    pos_tags_list = pos_tag(tokens)
+    chunks = ne_chunk(pos_tags_list)
     entities = []
     for chunk in chunks:
-        if isinstance(chunk, Tree):  
+        if isinstance(chunk, Tree): 
             entity_name = " ".join(c[0] for c in chunk.leaves())
             entity_type = chunk.label()
             entities.append({"entity": entity_name, "type": entity_type})
     return entities
-
-
 
 @app.route("/")
 def home():

@@ -74,7 +74,7 @@ def get_tfidf(texts):
 def pos_tagging(text):
     filtered_text = remove_stopwords(text)  
     tokens = word_tokenize(filtered_text)   
-    return [{"word": word, "pos": pos} for word, pos in tagged]
+    return [{"word": word, "pos": pos} for word, pos in tokens]
 
 def named_entity_recognition(text):
     tokens = word_tokenize(text)

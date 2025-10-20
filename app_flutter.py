@@ -49,8 +49,7 @@ def stem_text(text):
 
 def tokenize_text(text):
     tokens = word_tokenize(text)
-    output = ','.join(tokens)
-    return output
+    return tokens
 
 
 def get_bow(texts):

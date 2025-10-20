@@ -1,17 +1,17 @@
-# Use official lightweight Python image
-FROM python:3.11-slim
+# Use official Python image (non-slim, more stable for builds)
+FROM python:3.11-bullseye
 
-# Set working directory
 WORKDIR /app
 
-# Copy all project files
+# Copy project files
 COPY . .
 
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose port 5000
+# Make sure NLTK uses local nltk_data folder
+ENV NLTK_DATA=/app/nltk_data
+
 EXPOSE 5000
 
-# Run the Flask app
 CMD ["python", "app_flutter.py"]
